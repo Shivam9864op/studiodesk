@@ -53,7 +53,7 @@ async function staticFile(res, pathname) {
   const safe = pathname === '/' ? 'index.html' : pathname.replace(/^\//, '');
   if (safe.includes('..')) return send(res, 400, { error: 'Invalid path.' });
   const file = path.join(dist, safe);
-  try { const data = await fs.readFile(file); const type = safe.endsWith('.js') ? 'text/javascript' : safe.endsWith('.css') ? 'text/css' : safe.endsWith('.svg') ? 'image/svg+xml' : 'text/html'; res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'x-content-type-options': 'nosniff' }); res.end(data); }
+  try { const data = await fs.readFile(file); const type = safe.endsWith('.js') ? 'text/javascript' : safe.endsWith('.css') ? 'text/css' : safe.endsWith('.svg') ? 'image/svg+xml' : safe.endsWith('.png') ? 'image/png' : safe.endsWith('.jpg') || safe.endsWith('.jpeg') ? 'image/jpeg' : safe.endsWith('.webp') ? 'image/webp' : 'text/html'; res.writeHead(200, { 'content-type': type, 'x-content-type-options': 'nosniff' }); res.end(data); }
   catch { try { const data = await fs.readFile(path.join(dist, 'index.html')); res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(data); } catch { send(res, 503, { error: 'StudioDesk is not built yet.' }); } }
 }
 
