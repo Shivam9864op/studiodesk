@@ -1,0 +1,30 @@
+{
+  "name": "studiodesk",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "A client workspace for campaign changes, visual approvals and explainable social reports.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "start": "node server/index.mjs",
+    "test": "vitest run",
+    "audit": "vitest run server/domain.test.mjs",
+    "benchmark": "node server/benchmark.mjs"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "pg": "^8.16.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "jsdom": "^30.0.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
+  }
+}
