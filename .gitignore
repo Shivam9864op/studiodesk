@@ -6,3 +6,6 @@ uploads
 backups
 *.log
 *.zip
+docs/media/map2.png
+docs/media/reports.png
+docs/media/review*.png
