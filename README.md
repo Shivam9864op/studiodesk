@@ -63,6 +63,8 @@ These visuals were captured from the local StudioDesk run with the fictional cam
 
 ![StudioDesk architecture flow — personal demo](docs/media/architecture.svg)
 
+[Watch the real local walkthrough video](docs/media/video/studiodesk-walkthrough.mp4) — personal open-source demo, synthetic campaign.
+
 ## Boundaries
 
 There is no social-platform login, scraper, publishing connection, payment flow or AI provider. Uploaded media is local and should be reviewed before production use. The fictional campaign must not be presented as a real café client or as evidence of customer results.
