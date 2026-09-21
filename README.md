@@ -51,6 +51,16 @@ The public demo intentionally uses memory-backed synthetic state when no databas
 - `server/store.mjs` — memory fallback and PostgreSQL-backed state.
 - `docs/` — recording notes and deployment boundaries.
 
+## Working visuals
+
+These visuals were captured from the local StudioDesk run with the fictional campaign. They are not generated client proof.
+
+![StudioDesk overview — personal demo, synthetic campaign](docs/media/overview.png)
+
+![StudioDesk dependency map — venue change](docs/media/map.png)
+
+![StudioDesk client portal preview — personal demo](docs/media/portal.png)
+
 ## Boundaries
 
 There is no social-platform login, scraper, publishing connection, payment flow or AI provider. Uploaded media is local and should be reviewed before production use. The fictional campaign must not be presented as a real café client or as evidence of customer results.
