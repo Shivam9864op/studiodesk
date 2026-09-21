@@ -10,7 +10,7 @@ const appRoot = path.resolve(root, '..');
 const dist = path.join(appRoot, 'dist');
 const uploads = path.join(appRoot, 'uploads');
 const port = Number(process.env.PORT || 8789);
-const limit = Number(process.env.BODY_LIMIT || 4_000_000);
+const limit = Number(process.env.BODY_LIMIT || 8_500_000);
 const privateMode = process.env.PRIVATE_MODE === 'true';
 const counters = new Map();
 
@@ -73,6 +73,19 @@ const server = http.createServer(async (req, res) => {
       const approveMatch = url.pathname.match(/^\/api\/assets\/([^/]+)\/approve$/);
       if (approveMatch && req.method === 'POST') { if (!allowed(req, 'client')) return send(res, 403, { error: 'Reviewer access required.' }); const input = await body(req); return send(res, 200, await store.approve(approveMatch[1], input.actor || role(req))); }
       if (url.pathname === '/api/reports/import' && req.method === 'POST') { const input = await body(req); const rows = Array.isArray(input.rows) ? input.rows : csvToRows(input.csv); return send(res, 200, await store.report(rows)); }
+      if (url.pathname === '/api/uploads' && req.method === 'POST') {
+        if (!allowed(req, 'editor')) return send(res, 403, { error: 'Editor access required.' });
+        const input = await body(req);
+        const mime = String(input.mime || '');
+        if (!['image/png', 'image/jpeg', 'image/webp'].includes(mime)) return send(res, 415, { error: 'Only PNG, JPEG and WebP uploads are supported.' });
+        const raw = String(input.data || '').replace(/^data:[^;]+;base64,/, '');
+        const buffer = Buffer.from(raw, 'base64');
+        if (!buffer.length || buffer.length > 6_000_000) return send(res, 413, { error: 'Image must be smaller than 6 MB.' });
+        const ext = mime.split('/')[1].replace('jpeg', 'jpg');
+        const file = `${crypto.randomUUID()}.${ext}`;
+        await fs.writeFile(path.join(uploads, file), buffer, { flag: 'wx', mode: 0o640 });
+        return send(res, 201, { path: `/uploads/${file}`, size: buffer.length });
+      }
       if (url.pathname === '/api/handoff' && req.method === 'GET') { const snapshot = await store.snapshot(); const { campaign } = snapshot; const outstanding = campaign.assets.filter((asset) => asset.status !== 'approved'); const markdown = [`# ${campaign.name}`, '', 'Personal demo · synthetic campaign', '', `Updated: ${campaign.updatedAt}`, '', '## Outstanding work', ... (outstanding.length ? outstanding.map((asset) => `- ${asset.type} (${asset.channel}) — ${asset.status}`) : ['- None']), '', '## Current facts', ...Object.values(campaign.facts).map((fact) => `- ${fact.label}: ${fact.value}`)].join('\n'); return send(res, 200, { markdown, json: snapshot }); }
       return send(res, 404, { error: 'API route not found.' });
     }

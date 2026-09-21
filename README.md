@@ -36,7 +36,10 @@ The included Compose file runs the Node service and PostgreSQL with persistent v
 ```bash
 docker compose up -d --build
 curl http://127.0.0.1:8789/api/health
+./scripts/backup.sh
 ```
+
+`scripts/backup.sh` keeps seven days of PostgreSQL dumps. Before accepting real data, copy the backup directory off-host and perform a restore drill; the sample deployment does not silently add a paid storage service.
 
 The public demo intentionally uses memory-backed synthetic state when no database is available. With `DATABASE_URL`, the demo state is persisted in PostgreSQL.
 
