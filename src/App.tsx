@@ -9,7 +9,7 @@ const api = async (url: string, options?: RequestInit) => { const response = awa
 
 function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [view, setView] = useState<View>('overview');
+  const [view, setView] = useState<View>(() => { const candidate = window.location.hash.slice(1) as View; return ['overview', 'calendar', 'review', 'map', 'reports', 'portal'].includes(candidate) ? candidate : 'overview'; });
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState<{ rows: number; checks: { line: number; severity: string; code: string; message: string }[]; valid: boolean } | null>(null);
@@ -19,6 +19,7 @@ function App() {
   const selected = snapshot?.campaign.assets.find((asset) => asset.id === selectedAsset) || snapshot?.campaign.assets[0];
   const outdated = snapshot?.campaign.assets.filter((asset) => asset.status === 'outdated').length ?? 0;
   const pending = snapshot?.campaign.assets.filter((asset) => asset.status !== 'approved').length ?? 0;
+  const navigate = (next: View) => { window.history.replaceState(null, '', next === 'overview' ? window.location.pathname : `#${next}`); setView(next); };
 
   async function changeFact(key: string, value: string) { try { await api(`/api/facts/${key}`, { method: 'PATCH', body: JSON.stringify({ value, actor: 'owner' }) }); await refresh(); setNotice(`${snapshot?.campaign.facts[key]?.label || key} updated. Linked approvals were reset.`); } catch (error) { setNotice((error as Error).message); } }
   async function revise(body: string) { if (!selected) return; try { await api(`/api/assets/${selected.id}`, { method: 'PATCH', body: JSON.stringify({ body, actor: 'editor' }) }); await refresh(); setNotice('Revision saved. Client approval is required for this version.'); } catch (error) { setNotice((error as Error).message); } }
@@ -29,13 +30,13 @@ function App() {
     <aside className="sidebar">
       <div className="brand"><span className="brand-mark">SD</span><span><strong>StudioDesk</strong><small>campaign workspace</small></span></div>
       <div className="workspace-pill"><span className="avatar">CM</span><span><b>{snapshot.workspace.name}</b><small>Owner workspace</small></span><span className="chevron">⌄</span></div>
-      <nav aria-label="Workspace navigation">{([['overview','Overview','◈'],['calendar','Content calendar','▦'],['review','Visual review','◌'],['map','Change map','⌁'],['reports','Reports','▤'],['portal','Client portal','↗']] as [View,string,string][]).map(([key,label,icon]) => <button key={key} className={view === key ? 'nav-item active' : 'nav-item'} onClick={() => setView(key)}><span>{icon}</span>{label}{key === 'review' && pending > 0 ? <em>{pending}</em> : null}</button>)}</nav>
+      <nav aria-label="Workspace navigation">{([['overview','Overview','◈'],['calendar','Content calendar','▦'],['review','Visual review','◌'],['map','Change map','⌁'],['reports','Reports','▤'],['portal','Client portal','↗']] as [View,string,string][]).map(([key,label,icon]) => <button key={key} className={view === key ? 'nav-item active' : 'nav-item'} onClick={() => navigate(key)}><span>{icon}</span>{label}{key === 'review' && pending > 0 ? <em>{pending}</em> : null}</button>)}</nav>
       <div className="sidebar-foot"><span className="status-dot" /> Demo mode <span className="synthetic">synthetic data</span></div>
     </aside>
     <main className="main">
-      <header className="topbar"><div><p className="eyebrow">Fictional client workspace</p><h1>{snapshot.campaign.name}</h1></div><div className="top-actions"><span className="privacy"><span className="lock">⌁</span> No platform connections</span><button className="ghost" onClick={() => setView('portal')}>Preview client view ↗</button><span className="user">SS</span></div></header>
+      <header className="topbar"><div><p className="eyebrow">Fictional client workspace</p><h1>{snapshot.campaign.name}</h1></div><div className="top-actions"><span className="privacy"><span className="lock">⌁</span> No platform connections</span><button className="ghost" onClick={() => navigate('portal')}>Preview client view ↗</button><span className="user">SS</span></div></header>
       {notice && <div className="notice" role="status"><span>i</span>{notice}<button onClick={() => setNotice('')}>×</button></div>}
-      {view === 'overview' && <Overview snapshot={snapshot} outdated={outdated} pending={pending} onFact={changeFact} onView={setView} />}
+      {view === 'overview' && <Overview snapshot={snapshot} outdated={outdated} pending={pending} onFact={changeFact} onView={navigate} />}
       {view === 'calendar' && <Calendar assets={snapshot.campaign.assets} />}
       {view === 'review' && <Review assets={snapshot.campaign.assets} selected={selected} onSelect={setSelectedAsset} onRevise={revise} onApprove={approve} />}
       {view === 'map' && <ChangeMap snapshot={snapshot} onFact={changeFact} />}
